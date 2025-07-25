@@ -1,18 +1,18 @@
 services:
   - type: web
-    name: ai-agent-backend-final-1-1
+    name: ai-agent-backend-final-1
     env: python
     buildCommand: "pip install -r requirements.txt"
-    startCommand: "python backend/app.py"
-    plan: free
+    startCommand: "python app.py"
+    rootDir: backend
     branch: main
     repo: https://github.com/abdulbasit742/ai-agent-backend-final-1
     region: singapore
-    rootDir: .  # project root (leave this if you're deploying from main folder)
+    plan: free
     envVars:
       - key: OPENAI_API_KEY
         value: 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
       - key: TELEGRAM_BOT_TOKEN
-        value: your_token
+        value: 7411580150:AAFRN8a0hFY5DSA4SkFKDFocjMkYnVFjQ_Q
       - key: TELEGRAM_USER_ID
-        value: your_id
+        value: "7491215797"
