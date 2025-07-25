@@ -7,7 +7,7 @@ services:
     rootDir: backend
     branch: main
     repo: https://github.com/abdulbasit742/ai-agent-backend-final-1
-    region: singapore
+    region: oregon
     plan: free
     envVars:
       - key: OPENAI_API_KEY
@@ -16,3 +16,17 @@ services:
         value: 7411580150:AAFRN8a0hFY5DSA4SkFKDFocjMkYnVFjQ_Q
       - key: TELEGRAM_USER_ID
         value: "7491215797"
+      - key: PYTHON_VERSION
+        value: 3.10.11
+      - key: FLASK_ENV
+        value: production
+      - key: FLASK_DEBUG
+        value: "False"
+      - key: JWT_SECRET_KEY
+        value: your-very-secret-jwt-key-please-change-this-to-a-strong-random-string
+      - key: DATABASE_URL
+        value: sqlite:///ai_agent_system.db
+      - key: HOST
+        value: 0.0.0.0
+      - key: PORT
+        value: "5000"
