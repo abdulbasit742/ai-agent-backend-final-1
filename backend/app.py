@@ -1,10 +1,10 @@
 import os
 from flask import Flask
 from flask_cors import CORS
-from src.routes import register_routes
-from src.database import init_db
-from src.services.telegram_service import TelegramService
-from src.services.chatgpt_service import ChatGPTService
+from backend.src.routes import register_routes
+from backend.src.database import init_db
+from backend.src.services.telegram_service import TelegramService
+from backend.src.services.chatgpt_service import ChatGPTService
 
 # Load .env only when running locally
 if os.environ.get("RENDER") != "true" and os.path.exists(".env"):
