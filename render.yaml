@@ -2,7 +2,7 @@ services:
   - type: web
     name: ai-agent-backend-final-1
     env: python
-    buildCommand: "pip install -r backend/requirements.txt"
+    buildCommand: "pip install -r requirements.txt"
     startCommand: "python app.py"
     rootDir: backend
     branch: main
