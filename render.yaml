@@ -2,31 +2,34 @@ services:
   - type: web
     name: ai-agent-backend-final-1
     env: python
-    buildCommand: "pip install -r requirements.txt"
-    startCommand: "python app.py"
     rootDir: backend
-    branch: main
-    repo: https://github.com/abdulbasit742/ai-agent-backend-final-1
     region: oregon
     plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn --bind 0.0.0.0:$PORT --workers 2 --timeout 60 app:app
+    autoDeploy: true
     envVars:
-      - key: OPENAI_API_KEY
-        value: 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
-      - key: TELEGRAM_BOT_TOKEN
-        value: 7411580150:AAFRN8a0hFY5DSA4SkFKDFocjMkYnVFjQ_Q
-      - key: TELEGRAM_USER_ID
-        value: "7491215797"
-      - key: PYTHON_VERSION
-        value: 3.10.11
-      - key: FLASK_ENV
+      - key: APP_ENV
         value: production
       - key: FLASK_DEBUG
-        value: "False"
+        value: "false"
+      - key: SECRET_KEY
+        sync: false
       - key: JWT_SECRET_KEY
-        value: your-very-secret-jwt-key-please-change-this-to-a-strong-random-string
+        sync: false
+      - key: CORS_ORIGINS
+        sync: false
       - key: DATABASE_URL
-        value: sqlite:///ai_agent_system.db
-      - key: HOST
-        value: 0.0.0.0
-      - key: PORT
-        value: "5000"
+        sync: false
+      - key: ALLOW_PUBLIC_REGISTRATION
+        value: "false"
+      - key: REGISTRATION_MIN_PASSWORD_LENGTH
+        value: "12"
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: OPENAI_MODEL
+        value: gpt-4o-mini
+      - key: TELEGRAM_BOT_TOKEN
+        sync: false
+      - key: TELEGRAM_USER_ID
+        sync: false
