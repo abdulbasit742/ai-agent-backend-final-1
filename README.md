@@ -1,310 +1,102 @@
-# AI Agent System - Full Stack Web Application
+# AI Agent Backend
 
-A comprehensive AI-powered task management system built with Flask (Python 3.10) and React.js, featuring OpenAI GPT integration, Telegram notifications, JWT authentication, and performance tracking.
+Flask backend for authenticated task management, optional OpenAI-assisted planning, Telegram notifications, and team performance tracking.
 
-## 🚀 Features
+## Security notice
 
-### Backend (Flask)
-- **Python 3.10 Compatible** - Fully tested and optimized for Python 3.10
-- **JWT Authentication** - Secure token-based authentication with role-based access (Admin/Team Member)
-- **Task CRUD Management** - Complete task lifecycle management with status tracking
-- **OpenAI GPT Integration** - AI-powered task generation and suggestions using OpenAI API
-- **Telegram Bot Integration** - Real-time notifications via Telegram Bot API
-- **SQLite Database** - Lightweight, efficient database with SQLAlchemy ORM
-- **Performance Tracking** - Team member performance scoring and analytics
-- **RESTful API** - Clean, well-documented API endpoints
+Credentials were previously committed to this repository. Removing them from the current branch does not revoke them or erase Git history. Rotate the exposed OpenAI key and Telegram bot token, replace the JWT secret, and update the deployment dashboard before using the service.
 
-### Frontend (React)
-- **Modern React.js** - Built with React 18+ and modern hooks
-- **Tailwind CSS** - Beautiful, responsive UI with utility-first CSS
-- **JWT Authentication** - Secure login/logout with protected routes
-- **Task Dashboard** - Intuitive task management interface
-- **Real-time Updates** - Live task status updates via API calls
-- **Responsive Design** - Mobile-friendly interface
-- **Performance Analytics** - Visual performance tracking for team members
+## What is included
 
-## 📋 Requirements
+- JWT authentication and role-based API access
+- Task CRUD, filtering, pagination, and performance metrics
+- Optional OpenAI task generation, assignment suggestions, and aggregate performance analysis
+- Optional Telegram notifications
+- Database readiness health check at `GET /api/health`
+- Validated production configuration, restricted CORS, disabled-by-default public registration, response security headers, and CI secret scanning
 
-### System Requirements
-- **Operating System**: Windows 10 (tested and optimized)
-- **Python**: Version 3.10 (required)
-- **Node.js**: Version 16+ (for React frontend)
-- **VS Code**: Recommended IDE with terminal support
+## Local setup
 
-### API Keys Required
-- **OpenAI API Key**: For AI task generation features
-- **Telegram Bot Token**: For notification system
-
-## 🛠️ Installation & Setup
-
-### Backend Setup (Flask)
-
-1. **Navigate to backend directory**:
-```powershell
+```bash
 cd backend
+python -m venv .venv
 ```
 
-2. **Create virtual environment**:
-```powershell
-python -m venv venv
+Activate the environment, then install dependencies:
+
+```bash
+python -m pip install -r requirements.txt
+cp .env.example .env
 ```
 
-3. **Activate virtual environment**:
-```powershell
-venv\Scripts\activate
+Generate two strong independent secrets and add them to `backend/.env`:
+
+```bash
+python -c "import secrets; print(secrets.token_urlsafe(48))"
 ```
 
-4. **Upgrade pip**:
-```powershell
-pip install --upgrade pip
-```
+Set `SECRET_KEY`, `JWT_SECRET_KEY`, and the allowed frontend origin in `CORS_ORIGINS`. OpenAI and Telegram settings are optional.
 
-5. **Install dependencies**:
-```powershell
-pip install -r requirements.txt
-```
+Run the service:
 
-6. **Configure environment variables**:
-   - Copy `.env.example` to `.env`
-   - Add your API keys (see Configuration section below)
-
-7. **Start the Flask server**:
-```powershell
+```bash
 python app.py
 ```
 
-The backend will be available at: `http://localhost:5000`
+The API listens on `http://localhost:5000` by default.
 
-### Frontend Setup (React)
+## Configuration rules
 
-1. **Navigate to frontend directory**:
-```powershell
-cd frontend
+Production startup fails when:
+
+- `JWT_SECRET_KEY` or `SECRET_KEY` is missing, short, or still a placeholder
+- `CORS_ORIGINS` is absent, contains `*`, or uses a non-HTTPS origin
+- numeric limits fall outside their safe ranges
+
+Public registration is disabled unless `ALLOW_PUBLIC_REGISTRATION=true`. Even when enabled, the public endpoint can create only `team` accounts and requires a password of at least 12 characters.
+
+## Main endpoints
+
+| Area | Endpoint |
+|---|---|
+| Health | `GET /api/health` |
+| Authentication | `POST /api/auth/login`, `POST /api/auth/refresh`, `GET /api/auth/me` |
+| Registration | `POST /api/auth/register` when explicitly enabled |
+| Tasks | `/api/tasks` |
+| AI planning | `/api/chat/generate-tasks`, `/api/chat/analyze-performance`, `/api/chat/suggest-assignment` |
+| Telegram | `/api/telegram/status`, `/api/telegram/test`, `/api/telegram/send-message` |
+
+Protected endpoints require `Authorization: Bearer <token>`.
+
+## Tests
+
+From the repository root:
+
+```bash
+python -m pip install -r backend/requirements.txt
+python -m compileall -q backend scripts
+python -m unittest discover -s backend/tests -p "test_*.py" -v
+python scripts/secret_check.py
 ```
 
-2. **Install dependencies**:
-```powershell
-npm install
-```
+The tests cover fail-closed configuration, CORS restrictions, deterministic AI fallback behavior, provider-client compatibility, application startup, route registration, health readiness, registration policy, and security headers.
 
-3. **Start the development server**:
-```powershell
-npm run dev
-```
+## Render deployment
 
-The frontend will be available at: `http://localhost:5173`
+`render.yaml` uses `backend/` as the service root and Gunicorn as the production server. Set the following in Render rather than committing values:
 
-## ⚙️ Configuration
+- `SECRET_KEY`
+- `JWT_SECRET_KEY`
+- `CORS_ORIGINS`, for example `https://your-frontend.example.com`
+- `DATABASE_URL`
+- optional `OPENAI_API_KEY`
+- optional `TELEGRAM_BOT_TOKEN` and `TELEGRAM_USER_ID`
 
-### Backend Environment Variables (.env)
+Use persistent managed storage for production data. Render's local filesystem is not a durable database.
 
-Create a `.env` file in the `backend/` directory with the following content:
+## Operational notes
 
-```env
-# Flask Configuration
-FLASK_ENV=development
-FLASK_DEBUG=True
-SECRET_KEY=your-secret-key-change-in-production
-
-# JWT Configuration
-JWT_SECRET_KEY=your-jwt-secret-key-change-in-production
-JWT_ACCESS_TOKEN_EXPIRES=3600
-
-# Database Configuration
-DATABASE_URL=sqlite:///ai_agent_system.db
-
-# OpenAI Configuration
-OPENAI_API_KEY=your-openai-api-key-here
-
-# Telegram Configuration
-TELEGRAM_BOT_TOKEN=7411580150:AAFRN8a0hFY5DSA4SkFKDFocjMkYnVFjQ_Q
-TELEGRAM_USER_ID=7491215797
-
-# Server Configuration
-HOST=0.0.0.0
-PORT=5000
-```
-
-### Frontend Environment Variables (.env)
-
-Create a `.env` file in the `frontend/` directory with the following content:
-
-```env
-# API Configuration
-VITE_API_URL=http://localhost:5000/api
-```
-
-## 👤 Default User Accounts
-
-The system comes with pre-configured demo accounts:
-
-### Admin Account
-- **Username**: `admin`
-- **Password**: `admin123`
-- **Role**: Administrator (full access)
-
-### Team Member Accounts
-- **Username**: `john_doe` | **Password**: `user123`
-- **Username**: `jane_smith` | **Password**: `user123`
-- **Username**: `mike_wilson` | **Password**: `user123`
-- **Role**: Team Member (limited access)
-
-## 🔧 Development
-
-### Project Structure
-
-```
-AI-AGENT-SYSTEM-FULL-2/
-├── backend/                    # Flask Backend
-│   ├── app.py                 # Main Flask application
-│   ├── requirements.txt       # Python dependencies
-│   ├── .env                   # Environment variables
-│   ├── venv/                  # Virtual environment
-│   └── src/
-│       ├── models/            # Database models
-│       │   ├── user.py        # User model
-│       │   └── task.py        # Task model
-│       ├── routes/            # API endpoints
-│       │   ├── auth.py        # Authentication routes
-│       │   ├── tasks.py       # Task management routes
-│       │   ├── chat.py        # OpenAI integration routes
-│       │   └── telegram.py    # Telegram integration routes
-│       └── services/          # Business logic
-│           ├── chatgpt_service.py    # OpenAI service
-│           └── telegram_service.py   # Telegram service
-│
-└── frontend/                  # React Frontend
-    ├── package.json          # Node.js dependencies
-    ├── vite.config.js        # Vite configuration
-    ├── tailwind.config.js    # Tailwind CSS configuration
-    └── src/
-        ├── App.jsx           # Main application component
-        ├── main.jsx          # Application entry point
-        ├── components/       # React components
-        │   ├── Login.jsx     # Login component
-        │   ├── Dashboard.jsx # Dashboard component
-        │   └── TaskCard.jsx  # Task card component
-        └── services/         # API services
-            └── api.js        # Backend API integration
-```
-
-### API Endpoints
-
-#### Authentication
-- `POST /api/auth/login` - User login
-- `POST /api/auth/logout` - User logout
-- `GET /api/auth/me` - Get current user info
-
-#### Tasks
-- `GET /api/tasks` - Get all tasks
-- `POST /api/tasks` - Create new task
-- `PUT /api/tasks/{id}` - Update task
-- `DELETE /api/tasks/{id}` - Delete task
-- `GET /api/tasks/stats` - Get task statistics
-
-#### AI Integration
-- `POST /api/chat/generate-tasks` - Generate AI tasks
-- `POST /api/chat/suggest-assignment` - AI assignment suggestions
-
-#### Telegram
-- `POST /api/telegram/send-notification` - Send Telegram notification
-- `GET /api/telegram/status` - Check Telegram bot status
-
-## 🧪 Testing
-
-### Backend Testing
-```powershell
-cd backend
-venv\Scripts\activate
-python -m pytest tests/
-```
-
-### Frontend Testing
-```powershell
-cd frontend
-npm test
-```
-
-### Manual Testing
-1. Start both backend and frontend servers
-2. Navigate to `http://localhost:5173`
-3. Login with admin credentials: `admin` / `admin123`
-4. Test task creation, assignment, and status updates
-5. Verify Telegram notifications (if configured)
-
-## 🚀 Deployment
-
-### Backend Deployment (Render.com)
-1. Push code to GitHub repository
-2. Connect repository to Render.com
-3. Set build command: `pip install -r requirements.txt`
-4. Set start command: `python app.py`
-5. Configure environment variables in Render dashboard
-
-### Frontend Deployment (Vercel/Netlify)
-1. Build the frontend: `npm run build`
-2. Deploy the `dist/` folder to Vercel or Netlify
-3. Configure `VITE_API_URL` to point to your deployed backend
-
-## 🔍 Troubleshooting
-
-### Common Issues
-
-#### Backend Issues
-- **Import Errors**: Ensure you're in the correct directory and virtual environment is activated
-- **Database Errors**: Delete `ai_agent_system.db` and restart the server to recreate the database
-- **API Key Errors**: Verify your OpenAI API key and Telegram bot token in `.env` file
-
-#### Frontend Issues
-- **Build Errors**: Clear node_modules and reinstall: `rm -rf node_modules && npm install`
-- **API Connection**: Verify backend is running and `VITE_API_URL` is correct
-- **Authentication Issues**: Clear browser localStorage and try logging in again
-
-### Performance Optimization
-- Use production builds for deployment
-- Enable gzip compression
-- Implement caching strategies
-- Monitor API response times
-
-## 📚 Documentation
-
-### API Documentation
-- Swagger/OpenAPI documentation available at: `http://localhost:5000/api/docs`
-- Postman collection included in `docs/` folder
-
-### Code Documentation
-- All functions and classes are documented with docstrings
-- Type hints used throughout the codebase
-- Comments explain complex business logic
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch: `git checkout -b feature-name`
-3. Make your changes and test thoroughly
-4. Commit your changes: `git commit -m 'Add feature'`
-5. Push to the branch: `git push origin feature-name`
-6. Submit a pull request
-
-## 📄 License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
-
-## 🆘 Support
-
-For support and questions:
-- Create an issue on GitHub
-- Check the troubleshooting section above
-- Review the API documentation
-
-## 🔄 Version History
-
-- **v1.0.0** - Initial release with core features
-- **v1.1.0** - Added AI task generation
-- **v1.2.0** - Telegram integration
-- **v1.3.0** - Performance tracking
-
----
-
-**Built with ❤️ using Flask, React, and modern web technologies**
-
+- AI calls have bounded prompts, timeouts, limited retries, validated outputs, and deterministic non-AI fallbacks.
+- The health endpoint checks database readiness without making external provider calls.
+- Server-side 5xx responses redact internal `details` fields.
+- Rotate any credential that has ever appeared in Git history, even after the file is cleaned.
