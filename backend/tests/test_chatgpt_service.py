@@ -17,7 +17,11 @@ class ChatGPTServiceTests(unittest.TestCase):
         self.assertFalse(tasks[0]["is_ai_generated"])
 
     def test_configured_key_initializes_client_without_network_call(self):
-        with patch.dict(os.environ, {"OPENAI_API_KEY": "sk-test-abcdefghijklmnopqrstuvwxyz123456"}, clear=False):
+        with patch.dict(
+            os.environ,
+            {"OPENAI_API_KEY": "test-provider-key-not-a-real-secret-1234567890"},
+            clear=False,
+        ):
             service = ChatGPTService()
         self.assertTrue(service.is_available())
 
