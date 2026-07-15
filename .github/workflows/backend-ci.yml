@@ -1,0 +1,43 @@
+name: Backend CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.10", "3.11"]
+    env:
+      APP_ENV: testing
+      FLASK_DEBUG: "false"
+      SECRET_KEY: test-flask-secret-that-is-longer-than-thirty-two-characters
+      JWT_SECRET_KEY: test-jwt-secret-that-is-longer-than-thirty-two-characters
+      DATABASE_URL: sqlite:///:memory:
+      CORS_ORIGINS: http://localhost:5173
+      ALLOW_PUBLIC_REGISTRATION: "false"
+      OPENAI_API_KEY: ""
+      TELEGRAM_BOT_TOKEN: ""
+      TELEGRAM_USER_ID: ""
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+          cache-dependency-path: backend/requirements.txt
+      - name: Install backend dependencies
+        run: python -m pip install --upgrade pip && python -m pip install -r backend/requirements.txt
+      - name: Compile Python sources
+        run: python -m compileall -q backend scripts
+      - name: Run backend tests
+        run: python -m unittest discover -s backend/tests -p "test_*.py" -v
+      - name: Reject committed credentials
+        run: python scripts/secret_check.py
